@@ -13,7 +13,7 @@ library(showtext)
 library(vctrs)
 theme_set(hrbrthemes::theme_ipsum_ps())
 
-# 2 Set fonts----
+# 2 Fonts----
 font_add_google("Lato", "lato")
 font_add_google(name = "Leckerli One", family = "Leckerli")
 font_add_google(name = "Pacifico", family = "Pacifico")
@@ -23,11 +23,15 @@ font_add_google(name = "Goldman", family = "Goldman")
 showtext_auto()
 showtext_opts(dpi = 300)
 
-# ANIMATE: McLaren speedmark buffered polygons----
-# theme_set----
+# 3 Theme----
 
 theme_set(theme_void() + theme(
   panel.background = element_rect(fill = 'black')))
+
+# 4 Animate----
+# *4.1 McLaren speedmark buffered polygons----
+
+# example from https://alistaire.rbind.io/blog/fireworks/
 
 p <- crossing(x = 1:30, nesting(t = 1:10, y = .5^(seq(t)))) %>% 
   ggplot(aes(x, y)) +
@@ -43,8 +47,6 @@ grid_mclaren_simple <- read.csv('./00_raw_data/mclaren_logo_dots.csv') %>%
 p_mclaren <- grid_mclaren_simple %>% 
   ggplot(aes(lon, lat)) + 
   geom_point(color = 'white') 
-
-p_mclaren
 
 p_mclaren_polygon <- grid_mclaren_simple %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
@@ -62,8 +64,6 @@ plot(p_mclaren_polygon_buf5, add=TRUE)
 plot(p_mclaren_polygon_buf6, add=TRUE)
 plot(p_mclaren_polygon_buf7, add=TRUE)
 plot(p_mclaren_polygon_buf8, add=TRUE)
-
-class(p_mclaren_polygon)
 
 sf_use_s2(FALSE)
 
@@ -193,7 +193,7 @@ animate(scatter_plot_animate, fps = 30)
 
 anim_save("./04_animate_gifs/third_saved_animation_logo_animate.gif", height = 372, width = 538, units = "px")
 
-# ANIMATE: firework Lando initials----
+# *4.2 Firework Lando initials----
 
 p_straight <- map_dfr(1:10, ~crossing(x = 1:30, nesting(
   y = seq(1, .x, length.out = 10)^0.5, 
@@ -209,7 +209,7 @@ animate(p_straight, fps = 30)
 
 anim_save("./04_animate_gifs/first_saved_animation_LN4_firework_animate.gif", height = 372, width = 538, units = "px")
 
-# ANIMATE: expand outwards from centroid to perimeter---- 
+# *4.3 Expand outwards from centroid to perimeter---- 
 #https://stackoverflow.com/questions/74408586/how-to-use-map-dfc-and-map-dfr-purrr-r-package-it-appears-they-are-doing-the
 
 test_fct_aj <- function(a, i){
@@ -218,7 +218,7 @@ test_fct_aj <- function(a, i){
   
 }
 
-# ANIMATE LOGO: expand from centroid----
+# *4.4 Expand from centroid----
 
 centroid_longitude <- 134.246
 centroid_latitude <- 124.0314
@@ -246,7 +246,7 @@ animate(scatter_plot_animate2, fps = 30)
 
 anim_save("./04_animate_gifs/first_saved_animation_logo_animate.gif", height = 372, width = 538, units = "px")
 
-# ANIMATE: expand inwards from perimeter to centroid---- 
+# *4.5 expand inwards from perimeter to centroid---- 
 grid_mclaren_slice |>
   group_split(lon, lat) %>% 
   map_dfr(~tibble(t= 10:1,
@@ -268,20 +268,7 @@ animate(scatter_plot_animate3, fps = 30)
 
 anim_save("./04_animate_gifs/second_saved_animation_logo_animate.gif", height = 372, width = 538, units = "px")
 
-p_straight <- map_dfr(1:10, ~crossing(x = 1:30, nesting(
-  y = seq(1, .x, length.out = 10)^0.5, 
-  t = 1:10)))
-
-test_fct_aj2 <- function(a, i){
-  
-  crossing(a, nesting(
-    y = seq(i, a, length.out = 10)^0.5))
-  
-}
-
-p_gnat <- map_dfr(1:10, ~data_frame(y = seq(1, .x, length.out = 10), t = 1:10))
-
-# ANIMATE: dynamic travel bottom left to top right----
+# *4.6 Dynamic travel bottom left to top right----
 
 make_seq <- function(x) {
   seq <- seq(x, 2*x, length.out = 10)
@@ -320,7 +307,7 @@ animate(scatter_plot_animate_lon_lat, fps = 30)
 
 anim_save("./04_animate_gifs/fourth_saved_animation_logo_animate.gif", height = 372, width = 538, units = "px")
 
-# ANIMATE: straight outwards attempt : too many points----
+# *4.7 Straight outwards attempt : too many points----
 
 make_seq2 <- function(value) {
   seq <- map_dfr(1:3, ~crossing(x = 1:84, nesting(
@@ -345,7 +332,7 @@ scatter_plot_animate_random <- lons2_unlisted %>%
 
 animate(scatter_plot_animate_random, fps = 30)
 
-# ANIMATE: expand in and out from bottom left----
+# *4.8 Expand in and out from bottom left----
 
 make_seq3 <- function(value) {
   seq <- crossing(x = value, nesting(t = 1:10, y = 0.75^(seq(t))))
@@ -415,7 +402,7 @@ animate(scatter_plot_animate_hole, nframes = 400, fps=30)
 
 anim_save("./04_animate_gifs/fifth_saved_animation_logo_animate2.gif", height = 372, width = 538, units = "px")
 
-# ANIMATE: dynamic travel top right to bottom left----
+# *4.9 Dynamic travel top right to bottom left----
 
 make_seq5 <- function(value) {
   seq <- map_dfr(1:10, ~crossing(x = value, nesting(
@@ -456,7 +443,7 @@ scatter_plot_animate_straight <- lons_lats5 %>%
 
 animate(scatter_plot_animate_straight, fps = 30)
 
-# ANIMATE: particles and gnats----
+# *4.10 Particles and gnats----
 
 make_seq6 <- function(value) {
   seq <- map_dfr(1:10, ~data_frame(y = seq(value, .x, length.out = 10), t = 10:1)) %>% 
@@ -495,7 +482,7 @@ scatter_plot_animate_particles <- lons_lats6 %>%
 
 animate(scatter_plot_animate_particles, nframes = 30)
 
-# ANIMATE: explosion----
+# *4.11 Explosion----
 
 make_seq7 <- function(value) {
   seq <- map_dfr(1:10, ~crossing(
@@ -539,7 +526,7 @@ scatter_plot_animate_explosion <- lons_lats7 %>%
 
 animate(scatter_plot_animate_particles, fps = 30)
 
-# ANIMATE: particle and gnats centroid to max (lon, lat)----
+# *4.12 Particle and gnats centroid to max (lon, lat)----
 
 test_fct_aj3 <- function(a, i){
   
@@ -566,7 +553,7 @@ animate(scatter_plot_animate4, nframes = 30)
 
 mc_test_aj |> mutate(lon_vals = runif(n())) -> mc_test_aj4
 
-# ANIMATE: particles going to logo expand outwards----
+# *4.13 Particles transitioning to logo expand outwards----
 grid_mclaren_slice |>
   group_split(lon, lat) %>% 
   map_dfr(~tibble(t= 11:20,
@@ -587,7 +574,8 @@ scatter_plot_animate5 <- mc_test_aj6 %>%
 
 animate(scatter_plot_animate5, fps = 30)
 
-# ANIMATE: McLaren heart third phase----
+# *4.14 Hearts to McLaren logo----
+# **4.14.1 McLaren heart third phase----
 
 grid_mclaren_heart1 <- read.csv('./00_raw_data/mclaren_logo_heart1_dots_horizontal_flip.csv') %>% 
   select(2:3) %>% 
@@ -630,7 +618,7 @@ scatter_plot_animate_heart1 <- mc_test_aj_heart1 %>%
 
 animate(scatter_plot_animate_heart1, fps = 30)
 
-# ANIMATE: McLaren heart second phase----
+# **4.14.2 McLaren heart second phase----
 
 grid_mclaren_heart2 <- read.csv('./00_raw_data/mclaren_logo_heart2_dots_horizontal_flip.csv') %>% 
   select(2:3) %>% 
@@ -673,7 +661,7 @@ scatter_plot_animate_heart2 <- mc_test_aj_heart2 %>%
 
 animate(scatter_plot_animate_heart2, fps = 30)
 
-# ANIMATE: McLaren heart central phase----
+# **4.14.3 McLaren heart central phase----
 
 grid_mclaren_heart3 <- read.csv('./00_raw_data/mclaren_logo_heart3_dots_horizontal_flip.csv') %>% 
   select(2:3) %>% 
@@ -716,12 +704,11 @@ scatter_plot_animate_heart3 <- mc_test_aj_heart3 %>%
 
 animate(scatter_plot_animate_heart3, fps = 30)
 
-# ANIMATE: 4 phased heart to McLaren speedmark----
+# **4.14.4 4 phased heart to McLaren speedmark--------
 #grid_mclaren_heart3 == core heart --> core (1:10) --> split 1:5
 #grid_mclaren_heart2 == core heart to mclaren phase 1 --> phase1 (1:10)  --> split 6:10
 #grid_mclaren_heart1 == core heart to mclaren phase 2 --> phase2 (11:20) --> split 11:15
 #grid_mclaren_slice == mclaren speedmark --> speedmark (11:20) --> split 16:20
-
 
 grid_mclaren_heart3 |>
   group_split(lon, lat) %>% 
