@@ -24,72 +24,12 @@ showtext_auto()
 showtext_opts(dpi = 300)
 
 # ANIMATE: McLaren speedmark buffered polygons----
+# theme_set----
 
-# grid_plot <- expand.grid(lon = seq(-180, 180, 10), 
-#                          lat = seq(-90, 90, 10))
-# 
-# grid_mclaren <- read.csv('./00_raw_data/mclaren_logo_dots.csv') %>% 
-#   select(2:3) %>% 
-#   rename(lon = x,
-#          lat = y) %>% 
-#   pmap(~st_point(c(...))) %>%
-#   st_sfc(crs = 4326) %>%    
-#   st_sf() 
-# 
-# #%>%    # convert to sf data frame
-#   ggplot() + 
-#   geom_sf()
-# 
-# glimpse(grid_mclaren)
-# class(grid_mclaren)
-# 
-# plot(st_buffer(grid_mclaren, dist = 1, endCapStyle="ROUND"), reset = FALSE, main = "endCapStyle: ROUND")
-# 
-# plot(grid_mclaren,col='blue')
-# plot(grid_mclaren, col ='red')
-# 
-# plot(grid_mclaren_buf)
-# polygon(grid_mclaren)
-# 
-# p = st_polygon(list(grid_mclaren))
-# > pbuf = st_buffer(p, .4)
-# > plot(pbuf)
-# > plot(p,add=TRUE,col="red")
-#   
-# grid_mclaren_polar <- read.csv('./00_raw_data/mclaren_logo_dots.csv') %>% 
-#   select(2:3)
-# 
-# p_polar <- ggplot(grid_mclaren_polar, aes(x, y)) +
-#   geom_point(fill=NA,col="black")
-# #+
-#   geom_shape(fill=NA,col="red",expand=unit(-0.95,"cm"))+
-#   theme_minimal()
-# 
-# p_polar  
-#   # ggplot() + 
-#   # geom_sf()
-# 
-# grid_mclaren_alt 
-# 
-# grid_mclaren + coord_sf(crs = "+proj=laea +lat_0=-90 +ellps=WGS84 +no_defs")
-# 
-# 
-# theme_set(theme_void() + theme(
-#   panel.background = element_rect(fill = 'black')))
-# 
-# x <- grid_mclaren$x
-# y <- grid_mclaren$y
-# t <- 1:10
-# 
-# y = .5^(seq(t))
-# y
-# test <- crossing(x, nesting(t=1:5), y = y*0.5^(seq(t)))
-# 
-# test <- crossing(grid_mclaren, nesting(x, y))
-# 
-# 
-p <- crossing(x = 1:30, nesting(t = 1:10, y = .5^(seq(t)))) 
-#%>%
+theme_set(theme_void() + theme(
+  panel.background = element_rect(fill = 'black')))
+
+p <- crossing(x = 1:30, nesting(t = 1:10, y = .5^(seq(t)))) %>% 
   ggplot(aes(x, y)) +
   geom_point(color = 'white') +
   coord_polar()
@@ -99,11 +39,6 @@ p
 grid_mclaren_simple <- read.csv('./00_raw_data/mclaren_logo_dots.csv') %>% 
   select(2:3) %>% 
   rename(lon = x, lat = y)
-
-#class(grid_mclaren_simple) <- 'data.frame'
-
-glimpse(grid_mclaren_simple)
-class(grid_mclaren_simple)
 
 p_mclaren <- grid_mclaren_simple %>% 
   ggplot(aes(lon, lat)) + 
@@ -250,7 +185,6 @@ scatter_plot
 scatter_plot_animate <- scatter_plot_points %>% 
   ggplot(aes(X, Y)) + 
   geom_point(color = '#E27231', size =2) +
-  #with_outer_glow(geom_point(color = '#E27231', size =2), colour='white', sigma = 1, expand = 1) +
   transition_time(t) + 
   shadow_wake(0.5) +
   annotate("text", y = 70, x = 170, label = "@allanjames1506", lineheight = 0.75, family = 'Zen',  size = 5, color = "gray40", vjust = 0.5)
@@ -260,18 +194,12 @@ animate(scatter_plot_animate, fps = 30)
 anim_save("./04_animate_gifs/third_saved_animation_logo_animate.gif", height = 372, width = 538, units = "px")
 
 # ANIMATE: firework Lando initials----
-p_alt <- map_dfr(1:10, ~crossing(x = 1:30, nesting(y = seq(1, .x, length.out = 10)^0.5, t = 1:10)))
-
-p_alt_mclaren <- map_dfr(1:10, ~crossing(grid_mclaren_simple$lon, nesting(y = seq(1, .x, length.out = 10)^0.5, t = 1:10)))
-
-grid_mclaren_simple$lat
 
 p_straight <- map_dfr(1:10, ~crossing(x = 1:30, nesting(
   y = seq(1, .x, length.out = 10)^0.5, 
   t = 1:10))) %>% 
   ggplot(aes(x, y)) + 
   geom_point(color = '#E27231') + 
-  #with_outer_glow(geom_point(color = '#CEF14E'), colour='#E27231', sigma = 5, expand = 2.5) +
   coord_polar() + 
   transition_time(t) + 
   shadow_wake(0.3) +
@@ -281,35 +209,8 @@ animate(p_straight, fps = 30)
 
 anim_save("./04_animate_gifs/first_saved_animation_LN4_firework_animate.gif", height = 372, width = 538, units = "px")
 
-y_try <- seq(109.28, 109.28, length.out = 10)^0.5
-
-x_lon <- grid_mclaren_simple$lon
-x_test <- vec_rep_each(x_lon, 10)
-x_test2 <- vec_rep_each(x_test, 10)
-t_var <- vec_rep(1:10, 840)
-
-df <- tibble(x_test2, t_var) 
-
-x_test
-
-?vec_rep_each
-
-grid_mclaren_slice <- grid_mclaren_simple %>% 
-  slice(1:83)
-
-grid_mclaren_slice %>% expand(nesting(lon, lat))
-
 # ANIMATE: expand outwards from centroid to perimeter---- 
 #https://stackoverflow.com/questions/74408586/how-to-use-map-dfc-and-map-dfr-purrr-r-package-it-appears-they-are-doing-the
-
-tibble(site = rep(c(LETTERS[1:3]), each = 6),
-       name = rep(c(letters[10:15]), 3),
-       size = runif(18)) %>%
-  arrange(site, name) -> d_tibble
-
-test_fct <- function(a, i) {
-  a ^ i
-}
 
 test_fct_aj <- function(a, i){
   
@@ -317,30 +218,13 @@ test_fct_aj <- function(a, i){
   
 }
 
-# create sequence of i's
-i_seq <- seq(1, 5, by = 1)
-i_seq_aj <- 0.5
-
-d_tibble |>
-  group_split(site, name) |>
-  map_dfr(~tibble(site = .x$site, 
-                  name = .x$name,
-                  i = i_seq,
-                  val = test_fct(.x$size, i_seq)))
-
-grid_mclaren_slice |>
-  group_split(lon) |>
-  map_dfr(1:10, ~expand(.x$lat, test_fct(.x$lon, i_seq_aj))) -> mc_test_aj 
-
-
-p_straight <- map_dfr(1:10, ~crossing(x = 1:30, nesting(
-  y = seq(1, .x, length.out = 10)^0.5, 
-  t = 1:10)))
+# ANIMATE LOGO: expand from centroid----
 
 centroid_longitude <- 134.246
 centroid_latitude <- 124.0314
 
-seq(from = 134.246, to = 26.78571, length.out = 10)
+grid_mclaren_slice <- grid_mclaren_simple %>% 
+  slice(1:83)
 
 grid_mclaren_slice |>
   group_split(lon, lat) %>% 
@@ -349,8 +233,6 @@ grid_mclaren_slice |>
                   lat = .x$lat,
                   lon_vals = test_fct_aj(centroid_longitude, .x$lon),
                   lat_vals = test_fct_aj(centroid_latitude, .x$lat))) -> mc_test_aj
-
-glimpse(grid_mclaren_simple)
 
 scatter_plot_animate2 <- mc_test_aj %>% 
   ggplot(aes(lon_vals, lat_vals)) + 
@@ -399,6 +281,8 @@ test_fct_aj2 <- function(a, i){
 
 p_gnat <- map_dfr(1:10, ~data_frame(y = seq(1, .x, length.out = 10), t = 1:10))
 
+# ANIMATE: dynamic travel bottom left to top right----
+
 make_seq <- function(x) {
   seq <- seq(x, 2*x, length.out = 10)
 }
@@ -431,11 +315,12 @@ scatter_plot_animate_lon_lat <- lon_lat %>%
   #with_outer_glow(geom_point(color = '#E27231', size =2), colour='gold', sigma = 5, expand = 5) +
   transition_time(t) + 
   shadow_wake(0.5) 
-#+annotate("text", y = 300, x = 300, label = "@allanjames1506", lineheight = 0.75, family = 'Zen',  size = 5, color = "gray40", vjust = 0.5)
 
 animate(scatter_plot_animate_lon_lat, fps = 30)
 
 anim_save("./04_animate_gifs/fourth_saved_animation_logo_animate.gif", height = 372, width = 538, units = "px")
+
+# ANIMATE: straight outwards attempt : too many points----
 
 make_seq2 <- function(value) {
   seq <- map_dfr(1:3, ~crossing(x = 1:84, nesting(
@@ -460,9 +345,10 @@ scatter_plot_animate_random <- lons2_unlisted %>%
 
 animate(scatter_plot_animate_random, fps = 30)
 
+# ANIMATE: expand in and out from bottom left----
 
 make_seq3 <- function(value) {
-  seq <- crossing(x = value, nesting(t = 10:1, y = 0.75^(seq(t))))
+  seq <- crossing(x = value, nesting(t = 1:10, y = 0.75^(seq(t))))
 }
 
 out_lon3 <- vector("list", length(grid_mclaren_simple$lon))
@@ -488,37 +374,172 @@ lats3_unlisted <- purrr::map_df(out_lat3, tibble::as_tibble) %>%
 lons_lats3 <- lons3_unlisted %>% 
   bind_cols(lats3_unlisted)
 
-scatter_plot_animate_hole <- lons_lats3 %>% 
+make_seq4 <- function(value) {
+  seq <- crossing(x = value, nesting(t = 20:11, y = 0.75^(seq(t))))
+}
+
+out_lon4 <- vector("list", length(grid_mclaren_simple$lon))
+for (i in seq_along(grid_mclaren_simple$lon)) {
+  out_lon4[[i]] <- make_seq4(grid_mclaren_simple$lon[[i]])
+}
+
+lons4_unlisted <- purrr::map_df(out_lon4, tibble::as_tibble) %>% 
+  mutate(xy = x*y) %>% 
+  rename(lon = xy) %>% 
+  select(t, lon)
+
+out_lat4 <- vector("list", length(grid_mclaren_simple$lat))
+for (i in seq_along(grid_mclaren_simple$lat)) {
+  out_lat4[[i]] <- make_seq4(grid_mclaren_simple$lat[[i]])
+}
+
+lats4_unlisted <- purrr::map_df(out_lat4, tibble::as_tibble) %>% 
+  mutate(xy = x*y) %>% 
+  rename(lat = xy) %>% 
+  select(lat)
+
+lons_lats4 <- lons4_unlisted %>% 
+  bind_cols(lats4_unlisted)
+
+lon_lats_in_out <- lons_lats3 %>% 
+  bind_rows(lons_lats4)
+
+scatter_plot_animate_hole <- lon_lats_in_out %>% 
   ggplot(aes(lon, lat)) + 
   #geom_point(color = '#E27231', size = 2) +
   with_outer_glow(geom_point(color = '#E27231', size =2), colour='#47c7fc', sigma = 2, expand = 2) +
   transition_time(t) + 
-  shadow_wake(0.9) 
+  shadow_wake(0.5) 
 
-animate(scatter_plot_animate_hole, nframes = 150, fps=30)
+animate(scatter_plot_animate_hole, nframes = 400, fps=30)
 
+anim_save("./04_animate_gifs/fifth_saved_animation_logo_animate2.gif", height = 372, width = 538, units = "px")
 
-make_seq(10)
+# ANIMATE: dynamic travel top right to bottom left----
 
-lons <- c(26.78571, 31.42857, 36.07143)
-
-longitudes <- vector(mode="numeric", length=length(lons))
-for (i in 1:length(lons)){
-  lon_edit <- lons[i] * 2
-  longitudes[i] <- lon_edit
+make_seq5 <- function(value) {
+  seq <- map_dfr(1:10, ~crossing(x = value, nesting(
+    y = seq(value, .x, length.out = 10)^0.5, 
+    t = 1:10
+  )))
 }
 
-test_map_dbl <- map_dbl(.x = grid_mclaren_simple$lon, ~make_seq)
-seq_along(grid_mclaren_simple$lon)
-
-means <- c(0, 1, 2)
-
-out <- vector("list", length(means))
-for (i in seq_along(means)) {
-  n <- sample(100, 1)
-  out[[i]] <- rnorm(n, means[[i]])
+out_lon5 <- vector("list", length(grid_mclaren_simple$lon))
+for (i in seq_along(grid_mclaren_simple$lon)) {
+  out_lon5[[i]] <- make_seq5(grid_mclaren_simple$lon[[i]])
 }
-str(out)
+
+lons5_unlisted <- purrr::map_df(out_lon5, tibble::as_tibble) %>% 
+  mutate(xy = x*y) %>% 
+  rename(lon = xy) %>% 
+  select(t, lon)
+
+out_lat5 <- vector("list", length(grid_mclaren_simple$lat))
+for (i in seq_along(grid_mclaren_simple$lat)) {
+  out_lat5[[i]] <- make_seq5(grid_mclaren_simple$lat[[i]])
+}
+
+lats5_unlisted <- purrr::map_df(out_lat5, tibble::as_tibble) %>% 
+  mutate(xy = x*y) %>% 
+  rename(lat = xy) %>% 
+  select(lat)
+
+lons_lats5 <- lons5_unlisted %>% 
+  bind_cols(lats5_unlisted)
+
+scatter_plot_animate_straight <- lons_lats5 %>% 
+  ggplot(aes(lon, lat)) + 
+  geom_point(color = '#E27231', size = 2) +
+  #with_outer_glow(geom_point(color = '#E27231', size =2), colour='#47c7fc', sigma = 2, expand = 2) +
+  transition_time(t) + 
+  shadow_wake(0.5) 
+
+animate(scatter_plot_animate_straight, fps = 30)
+
+# ANIMATE: particles and gnats----
+
+make_seq6 <- function(value) {
+  seq <- map_dfr(1:10, ~data_frame(y = seq(value, .x, length.out = 10), t = 10:1)) %>% 
+    mutate(x = runif(n()))
+}
+
+out_lon6 <- vector("list", length(grid_mclaren_simple$lon))
+for (i in seq_along(grid_mclaren_simple$lon)) {
+  out_lon6[[i]] <- make_seq6(grid_mclaren_simple$lon[[i]])
+}
+
+lons6_unlisted <- purrr::map_df(out_lon6, tibble::as_tibble) %>% 
+  mutate(xy = x*y) %>% 
+  rename(lon = xy) %>% 
+  select(t, lon)
+
+out_lat6 <- vector("list", length(grid_mclaren_simple$lat))
+for (i in seq_along(grid_mclaren_simple$lat)) {
+  out_lat6[[i]] <- make_seq6(grid_mclaren_simple$lat[[i]])
+}
+
+lats6_unlisted <- purrr::map_df(out_lat6, tibble::as_tibble) %>% 
+  mutate(xy = x*y) %>% 
+  rename(lat = xy) %>% 
+  select(lat)
+
+lons_lats6 <- lons6_unlisted %>% 
+  bind_cols(lats6_unlisted)
+
+scatter_plot_animate_particles <- lons_lats6 %>% 
+  ggplot(aes(lon, lat)) + 
+  #geom_point(color = '#E27231', size = 2) +
+  with_outer_glow(geom_point(color = '#E27231', size =2), colour='#47c7fc', sigma = 2, expand = 2) +
+  transition_time(t) + 
+  shadow_wake(0.5) 
+
+animate(scatter_plot_animate_particles, nframes = 30)
+
+# ANIMATE: explosion----
+
+make_seq7 <- function(value) {
+  seq <- map_dfr(1:10, ~crossing(
+    x = runif(30), 
+    nesting(
+      y = seq(value, .x, length.out = 10)^0.5, 
+      t = 1:10)
+  )
+  )
+}
+
+out_lon7 <- vector("list", length(grid_mclaren_simple$lon))
+for (i in seq_along(grid_mclaren_simple$lon)) {
+  out_lon7[[i]] <- make_seq6(grid_mclaren_simple$lon[[i]])
+}
+
+lons7_unlisted <- purrr::map_df(out_lon7, tibble::as_tibble) %>% 
+  mutate(xy = x*y) %>% 
+  rename(lon = xy) %>% 
+  select(t, lon)
+
+out_lat7 <- vector("list", length(grid_mclaren_simple$lat))
+for (i in seq_along(grid_mclaren_simple$lat)) {
+  out_lat7[[i]] <- make_seq6(grid_mclaren_simple$lat[[i]])
+}
+
+lats7_unlisted <- purrr::map_df(out_lat7, tibble::as_tibble) %>% 
+  mutate(xy = x*y) %>% 
+  rename(lat = xy) %>% 
+  select(lat)
+
+lons_lats7 <- lons7_unlisted %>% 
+  bind_cols(lats7_unlisted)
+
+scatter_plot_animate_explosion <- lons_lats7 %>% 
+  ggplot(aes(lon, lat)) + 
+  geom_point(color = '#E27231', size = 2) +
+  #with_outer_glow(geom_point(color = '#E27231', size =2), colour='#47c7fc', sigma = 2, expand = 2) +
+  transition_time(t) + 
+  shadow_wake(0.5) 
+
+animate(scatter_plot_animate_particles, fps = 30)
+
+# ANIMATE: particle and gnats centroid to max (lon, lat)----
 
 test_fct_aj3 <- function(a, i){
   
@@ -543,21 +564,9 @@ scatter_plot_animate4 <- mc_test_aj3 %>%
 
 animate(scatter_plot_animate4, nframes = 30)
 
-
-test_30 <- grid_mclaren_slice %>% 
-  select(lon) %>% 
-  slice(1:30)
-
-test_10 <- grid_mclaren_slice %>% 
-  select(lat) %>% 
-  slice(1:10)
-
-test_cross_aj <- crossing(x = test_30, nesting(t = test_10, y = 0.5^(seq(t))))
-
-test_cross <- crossing(x = 1:30, nesting(t = 1:10, y = .5^(seq(t))))
-
 mc_test_aj |> mutate(lon_vals = runif(n())) -> mc_test_aj4
 
+# ANIMATE: particles going to logo expand outwards----
 grid_mclaren_slice |>
   group_split(lon, lat) %>% 
   map_dfr(~tibble(t= 11:20,
@@ -599,9 +608,6 @@ st_centroid(p_mclaren_heart1_polygon)
 
 centroid_longitude_heart1 <- 143.7585
 centroid_latitude_heart1 <- 119.9406
-
-# grid_mclaren_heart1_slice <- grid_mclaren_heart1 %>% 
-#   slice(1:63)
 
 grid_mclaren_heart1 |>
   group_split(lon, lat) %>% 
@@ -646,9 +652,6 @@ st_centroid(p_mclaren_heart2_polygon)
 centroid_longitude_heart2 <- 145.2814
 centroid_latitude_heart2 <- 121.1838
 
-# grid_mclaren_heart1_slice <- grid_mclaren_heart1 %>% 
-#   slice(1:63)
-
 grid_mclaren_heart2 |>
   group_split(lon, lat) %>% 
   map_dfr(~tibble(t= 1:10,
@@ -692,9 +695,6 @@ st_centroid(p_mclaren_heart3_polygon)
 centroid_longitude_heart3 <- 140.4518
 centroid_latitude_heart3 <- 118.0075
 
-# grid_mclaren_heart1_slice <- grid_mclaren_heart1 %>% 
-#   slice(1:63)
-
 grid_mclaren_heart3 |>
   group_split(lon, lat) %>% 
   map_dfr(~tibble(t= 1:10,
@@ -717,7 +717,6 @@ scatter_plot_animate_heart3 <- mc_test_aj_heart3 %>%
 animate(scatter_plot_animate_heart3, fps = 30)
 
 # ANIMATE: 4 phased heart to McLaren speedmark----
-
 #grid_mclaren_heart3 == core heart --> core (1:10) --> split 1:5
 #grid_mclaren_heart2 == core heart to mclaren phase 1 --> phase1 (1:10)  --> split 6:10
 #grid_mclaren_heart1 == core heart to mclaren phase 2 --> phase2 (11:20) --> split 11:15
@@ -773,7 +772,6 @@ speedmark <- speedmark %>%
 #%>% 
   filter(t == 16 | t == 17 | t == 18 | t == 19 | t == 20)
   
-
 heart_to_speedmark <- bind_rows(core, phase1, speedmark)
 
 scatter_plot_animate_heart_to_speedmark <- heart_to_speedmark %>% 
