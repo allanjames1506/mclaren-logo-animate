@@ -11,6 +11,7 @@ library(readr)
 library(ggfx)
 library(showtext)
 library(vctrs)
+library(sf)
 theme_set(hrbrthemes::theme_ipsum_ps())
 
 # 2 Fonts----
@@ -446,7 +447,7 @@ animate(scatter_plot_animate_straight, fps = 30)
 # *4.10 Particles and gnats----
 
 make_seq6 <- function(value) {
-  seq <- map_dfr(1:10, ~data_frame(y = seq(value, .x, length.out = 10), t = 10:1)) %>% 
+  seq <- map_dfr(1:4, ~data_frame(y = seq(value, .x, length.out = 4), t = 4:1)) %>% 
     mutate(x = runif(n()))
 }
 
@@ -486,7 +487,7 @@ animate(scatter_plot_animate_particles, nframes = 30)
 
 make_seq7 <- function(value) {
   seq <- map_dfr(1:10, ~crossing(
-    x = runif(30), 
+    x = runif(10), 
     nesting(
       y = seq(value, .x, length.out = 10)^0.5, 
       t = 1:10)
@@ -496,7 +497,7 @@ make_seq7 <- function(value) {
 
 out_lon7 <- vector("list", length(grid_mclaren_simple$lon))
 for (i in seq_along(grid_mclaren_simple$lon)) {
-  out_lon7[[i]] <- make_seq6(grid_mclaren_simple$lon[[i]])
+  out_lon7[[i]] <- make_seq7(grid_mclaren_simple$lon[[i]])
 }
 
 lons7_unlisted <- purrr::map_df(out_lon7, tibble::as_tibble) %>% 
@@ -506,7 +507,7 @@ lons7_unlisted <- purrr::map_df(out_lon7, tibble::as_tibble) %>%
 
 out_lat7 <- vector("list", length(grid_mclaren_simple$lat))
 for (i in seq_along(grid_mclaren_simple$lat)) {
-  out_lat7[[i]] <- make_seq6(grid_mclaren_simple$lat[[i]])
+  out_lat7[[i]] <- make_seq7(grid_mclaren_simple$lat[[i]])
 }
 
 lats7_unlisted <- purrr::map_df(out_lat7, tibble::as_tibble) %>% 
@@ -524,7 +525,7 @@ scatter_plot_animate_explosion <- lons_lats7 %>%
   transition_time(t) + 
   shadow_wake(0.5) 
 
-animate(scatter_plot_animate_particles, fps = 30)
+animate(scatter_plot_animate_explosion, fps = 30)
 
 # *4.12 Particle and gnats centroid to max (lon, lat)----
 
@@ -573,6 +574,115 @@ scatter_plot_animate5 <- mc_test_aj6 %>%
   shadow_wake(0.5)
 
 animate(scatter_plot_animate5, fps = 30)
+
+# **4.14 Spirals----
+
+make_seq8 <- function(value) {
+  seq <- map_dfr(1:3, ~crossing(
+    x = {
+      x = seq(3) + 0.3*.x; 
+      ifelse(x > 2, x - 2, x)
+    }, 
+    nesting(
+      y = seq(value, .x, length.out = 3)^0.5, 
+      t = 3:1)
+  )
+  )
+}
+
+out_lon8 <- vector("list", length(grid_mclaren_simple$lon))
+for (i in seq_along(grid_mclaren_simple$lon)) {
+  out_lon8[[i]] <- make_seq8(grid_mclaren_simple$lon[[i]])
+}
+
+lons8_unlisted <- purrr::map_df(out_lon8, tibble::as_tibble) %>% 
+  mutate(xy = x*y) %>% 
+  rename(lon = xy) %>% 
+  select(t, lon)
+
+out_lat8 <- vector("list", length(grid_mclaren_simple$lat))
+for (i in seq_along(grid_mclaren_simple$lat)) {
+  out_lat8[[i]] <- make_seq8(grid_mclaren_simple$lat[[i]])
+}
+
+lats8_unlisted <- purrr::map_df(out_lat8, tibble::as_tibble) %>% 
+  mutate(xy = x*y) %>% 
+  rename(lat = xy) %>% 
+  select(lat)
+
+lons_lats8 <- lons8_unlisted %>% 
+  bind_cols(lats8_unlisted)
+
+scatter_plot_animate_spirals <- lons_lats8 %>% 
+  ggplot(aes(lon, lat)) + 
+  geom_point(color = '#E27231', size = 0.5) +
+  #with_outer_glow(geom_point(color = '#E27231', size =2), colour='#47c7fc', sigma = 2, expand = 2) +
+  transition_time(t) + 
+  shadow_wake(0.5) 
+
+animate(scatter_plot_animate_spirals, fps = 30)
+
+
+# **4.15 Firework----
+
+p_firework <- map_dfr(1:10, ~crossing(
+  x = {
+    x = seq(30) + 0.6*.x; 
+    ifelse(x > 30, x - 30, x)
+  }, 
+  nesting(
+    y = seq(1, .x, length.out = 10)^0.5, 
+    t = 1:10)
+)
+)
+
+make_seq9 <- function(value) {
+  seq <- map_dfr(1:3, ~crossing(
+    x = {
+      x = seq(3) + 0.6*.x; 
+      ifelse(x > 2, x - 2, x)
+    }, 
+    nesting(
+      y = seq(value, .x, length.out = 3)^0.5, 
+      t = 3:1)
+  )
+  )
+}
+
+out_lon9 <- vector("list", length(grid_mclaren_simple$lon))
+for (i in seq_along(grid_mclaren_simple$lon)) {
+  out_lon9[[i]] <- make_seq9(grid_mclaren_simple$lon[[i]])
+}
+
+lons9_unlisted <- purrr::map_df(out_lon9, tibble::as_tibble) %>% 
+  mutate(xy = x*y) %>% 
+  rename(lon = xy) %>% 
+  select(t, lon)
+
+out_lat9 <- vector("list", length(grid_mclaren_simple$lat))
+for (i in seq_along(grid_mclaren_simple$lat)) {
+  out_lat9[[i]] <- make_seq9(grid_mclaren_simple$lat[[i]])
+}
+
+lats9_unlisted <- purrr::map_df(out_lat9, tibble::as_tibble) %>% 
+  mutate(xy = x*y) %>% 
+  rename(lat = xy) %>% 
+  select(lat)
+
+lons_lats9 <- lons9_unlisted %>% 
+  bind_cols(lats9_unlisted)
+
+scatter_plot_animate_firework <- lons_lats9 %>% 
+  ggplot(aes(lon, lat)) + 
+  geom_point(color = '#E27231', size = 1) +
+  #with_outer_glow(geom_point(color = '#E27231', size =2), colour='#47c7fc', sigma = 2, expand = 2) +
+  transition_time(t) + 
+  shadow_wake(0.3) 
+
+animate(scatter_plot_animate_firework, fps=10)
+
+anim_save("./04_animate_gifs/sixth_saved_animation_logo_animate2.gif", height = 372, width = 538, units = "px")
+
 
 # *4.14 Hearts to McLaren logo----
 # **4.14.1 McLaren heart third phase----
@@ -772,4 +882,84 @@ scatter_plot_animate_heart_to_speedmark <- heart_to_speedmark %>%
 animate(scatter_plot_animate_heart_to_speedmark, fps = 30, duration = 10)
 
 anim_save("./04_animate_gifs/first_saved_animation_heart_to_speedmark_logo_animate.gif", height = 372, width = 538, units = "px")
+
+# 5 No.4----
+
+mclaren_no4 <- read.csv('./00_raw_data/lando_no4_points_horizontal_flip.csv') %>% 
+  select(2:3) %>% 
+  rename(lon = x, lat = y)
+
+mclaren_no4_polygon <- mclaren_no4 %>%
+  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
+  summarise(geometry = st_combine(geometry)) %>%
+  st_cast("POLYGON")
+
+ggplot(mclaren_no4_polygon, aes())+
+  geom_sf()+
+  labs(fill="Member of a sport association")+
+  guides(
+    fill=guide_legend(
+      nrow=1,
+      title.position="top",
+      label.position="bottom"
+    ))
+
+grd_mclaren_no4 <- st_make_grid(
+  mclaren_no4_polygon, # map name 
+  n = c(20,20) # number of cells per longitude/latitude
+)%>%
+  # convert back to sf object
+  st_sf()%>%
+  # add a unique id to each cell 
+  # (will be useful later to get back centroids data)
+  mutate(id=row_number())
+
+# Extract mclaren no4 centroids----
+cent_grd_mclaren_no4 <- grd_mclaren_no4 %>%
+  st_centroid()
+
+# Take a look at the results
+ggplot()+
+  geom_sf(grd_mclaren_no4, mapping = aes(geometry=geometry))+
+  geom_sf(cent_grd_mclaren_no4, mapping = aes(geometry=geometry), pch=21, size=0.5)+
+  theme_void()
+
+# Intersect centroids with basemap
+cent_grd_mclaren_no4_clean <- cent_grd_mclaren_no4 %>%
+  st_intersection(cent_grd_mclaren_no4)
+
+# Make a centroid without geom
+# (convert from sf object to tibble)
+cent_grd_mclaren_no4_no_geom <- cent_grd_mclaren_no4_clean %>%
+  st_drop_geometry()
+
+# Join with grid thanks to id column
+grd_mclaren_no4_clean <- grd_mclaren_no4 %>%
+  #filter(id%in%sel)%>%
+  left_join(cent_grd_mclaren_no4_no_geom)
+
+# *6.1 nhs board area----
+plot_no4 <- ggplot() +
+  geom_sf(
+    # drop_na() is one way to suppress the cells outside the country
+    grd_mclaren_no4_clean %>% tidyr::drop_na(), 
+    mapping = aes(geometry = geometry)
+  ) +
+  geom_sf(cent_grd_mclaren_no4_clean, mapping = aes(geometry = geometry), fill=NA, pch=21, size=0.5) +
+  guides(
+    color = 'none',
+    fill = guide_legend(
+      keywidth = 4, keyheight = 1, nrow = 1,
+      title.position = "top", label.position = "bottom"
+    )
+  ) +
+  theme_void()
+
+plot_no4
+
+
+
+
+
+
 
