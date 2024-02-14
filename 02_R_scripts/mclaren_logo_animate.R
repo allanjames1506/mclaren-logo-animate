@@ -308,6 +308,24 @@ animate(scatter_plot_animate_lon_lat, fps = 30)
 
 anim_save("./04_animate_gifs/fourth_saved_animation_logo_animate.gif", height = 372, width = 538, units = "px")
 
+# **4.6.1 Randomly shuffle time
+
+lon_lat_random <- lon_lat %>% 
+  filter(t == 1 | t == 2) %>% 
+  mutate(t = sample(t))
+
+scatter_plot_animate_lon_lat_shuffled <- lon_lat_random %>% 
+  ggplot(aes(lon, lat)) + 
+  #geom_point(colour = '#E27231', size = 5) +
+  with_outer_glow(geom_point(color = '#E27231', size =5), colour='white', sigma = 5, expand = 5) +
+  transition_time(t) 
+
+animate(scatter_plot_animate_lon_lat_shuffled, fps = 10)
+
+anim_save("./04_animate_gifs/seventh_saved_animation_logo_animate.gif", height = 372, width = 538, units = "px")
+
+
+
 # *4.7 Straight outwards attempt : too many points----
 
 make_seq2 <- function(value) {
@@ -885,14 +903,28 @@ anim_save("./04_animate_gifs/first_saved_animation_heart_to_speedmark_logo_anima
 
 # 5 No.4----
 
+bck_po <- "#d6d2c4"
+
+theme_custom <- theme_void()+
+  theme(
+    plot.margin = margin(1,1,10,1,"pt"),
+    plot.background = element_rect(fill=bck_po,color=NA),
+    legend.position = "bottom",
+    legend.title = element_text(hjust=0.5,color="white",face="bold"),
+    legend.text = element_text(color="white")
+  )
+
 mclaren_no4 <- read.csv('./00_raw_data/lando_no4_points_horizontal_flip.csv') %>% 
   select(2:3) %>% 
   rename(lon = x, lat = y)
 
 mclaren_no4_polygon <- mclaren_no4 %>%
-  st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
+  st_as_sf(coords = c("lon", "lat"), crs = 3857) %>%
   summarise(geometry = st_combine(geometry)) %>%
   st_cast("POLYGON")
+
+ggplot(mclaren_no4_polygon, aes())+
+  geom_sf()
 
 ggplot(mclaren_no4_polygon, aes())+
   geom_sf()+
@@ -906,12 +938,8 @@ ggplot(mclaren_no4_polygon, aes())+
 
 grd_mclaren_no4 <- st_make_grid(
   mclaren_no4_polygon, # map name 
-  n = c(20,20) # number of cells per longitude/latitude
-)%>%
-  # convert back to sf object
-  st_sf()%>%
-  # add a unique id to each cell 
-  # (will be useful later to get back centroids data)
+  n = c(20,20)) %>%
+  st_sf() %>% 
   mutate(id=row_number())
 
 # Extract mclaren no4 centroids----
@@ -926,7 +954,7 @@ ggplot()+
 
 # Intersect centroids with basemap
 cent_grd_mclaren_no4_clean <- cent_grd_mclaren_no4 %>%
-  st_intersection(cent_grd_mclaren_no4)
+  st_intersection(mclaren_no4_polygon)
 
 # Make a centroid without geom
 # (convert from sf object to tibble)
@@ -945,15 +973,7 @@ plot_no4 <- ggplot() +
     grd_mclaren_no4_clean %>% tidyr::drop_na(), 
     mapping = aes(geometry = geometry)
   ) +
-  geom_sf(cent_grd_mclaren_no4_clean, mapping = aes(geometry = geometry), fill=NA, pch=21, size=0.5) +
-  guides(
-    color = 'none',
-    fill = guide_legend(
-      keywidth = 4, keyheight = 1, nrow = 1,
-      title.position = "top", label.position = "bottom"
-    )
-  ) +
-  theme_void()
+  geom_sf(cent_grd_mclaren_no4_clean, mapping = aes(geometry = geometry), fill=NA, pch=21, size=0.5) 
 
 plot_no4
 
