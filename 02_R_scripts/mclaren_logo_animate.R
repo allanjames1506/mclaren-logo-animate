@@ -12,6 +12,7 @@ library(ggfx)
 library(showtext)
 library(vctrs)
 library(sf)
+library(imager)
 theme_set(hrbrthemes::theme_ipsum_ps())
 
 # 2 Fonts----
@@ -971,11 +972,33 @@ plot_no4 <- ggplot() +
   geom_sf(
     # drop_na() is one way to suppress the cells outside the country
     grd_mclaren_no4_clean %>% tidyr::drop_na(), 
-    mapping = aes(geometry = geometry)
-  ) +
-  geom_sf(cent_grd_mclaren_no4_clean, mapping = aes(geometry = geometry), fill=NA, pch=21, size=0.5) 
+    mapping = aes(geometry = geometry)) +
+  geom_sf(cent_grd_mclaren_no4_clean, mapping = aes(geometry = geometry), fill=NA, pch=21, size=0.5) +
+  geom_sf(mclaren_no4_polygon, mapping = aes(geometry = geometry))
 
 plot_no4
+
+grd_mclaren_no4_clean_t <- grd_mclaren_no4_clean %>% 
+  bind_cols(random_t)
+
+random_t <- rep(sample(1:5),1, each=80) %>% 
+  sample()
+
+random_t <- as_tibble(random_t) %>% 
+  rename(t = value)
+
+colnames(random_t)[1] <- 't'
+colnames(my_dataframe)[2] ="c2"
+
+scatter_plot_animate_no4 <- ggplot() + 
+  geom_sf(
+    grd_mclaren_no4_clean_t, 
+    mapping = aes(geometry = geometry)) +
+  transition_time(t) 
+
+animate(scatter_plot_animate_no4, nframes = 30)
+
+anim_save("./04_animate_gifs/sixth_saved_animation_logo_animate2.gif", height = 372, width = 538, units = "px")
 
 # https://art-from-code.netlify.app/day-1/session-1/
 
@@ -983,9 +1006,223 @@ plot_no4
 
 # https://happygitwithr.com/rstudio-git-github
 
+# 7 Oscar tiled----
+
+# https://blog.djnavarro.net/posts/2021-10-19_rtistry-posts/
+# https://fronkonstin.com
+# https://github.com/aschinchon/monsters-tiled/blob/master/tile.R
+
+# Point to the place where your image is stored
+oscar <- './00_raw_data/OP81_track_wall_crop1.jpg'
+lando <- './00_raw_data/Lando1_cropped.jpg'
+
+# Load and convert to grayscale
+load.image(oscar) %>%
+  grayscale() -> img
+
+plot(img)
+
+# The image is summarized into s x s squares 
+s <- 2
+
+# Resume pixels using mean: this decreases drastically the resolution of the image
+img %>% 
+  as.data.frame() %>%
+  mutate(x = cut(x, round(dim(img)[1]/s, 0), labels = FALSE),
+         y = cut(y, round(dim(img)[2]/s, 0), labels = FALSE)) %>%
+  group_by(x, y) %>%
+  summarise(value = mean(value)) -> df
+
+# Create new variable to be used to define size and color of the lines of tiles
+df %>% mutate(z = cut(value, breaks = 20, labels = FALSE)) -> df
+
+# Initialize plot 
+plot <- ggplot()
+
+# Resulting plot will be build with 20 layers: one layer per each different value of z 
+for (i in 1:20){
+  sub_data = df %>% filter(z==i)
+  plot <- plot + geom_tile(aes(x, y),
+                           size = 2*i/(20-1)-2/(20-1),
+                           fill = "#E27231",
+                           col = paste0("gray", round(((100-5)*i)/(20-1)+5-(100-5)/(20-1), 0)),
+                           data = df %>% filter(z==i))
+}
+
+# Last tweaks
+plot_oscar_animate <- plot +
+  coord_fixed() +
+  scale_y_reverse() +
+  theme_void() + 
+  transition_states(z, transition_length = 3, state_length = 3, wrap = FALSE) + 
+  shadow_mark() +
+  enter_fade() +
+  exit_fade()
+
+animate(plot_oscar_animate, fps = 30, duration = 20, end_pause = 100)
+
+#plot + transition_time(x) + shadow_mark()
+
+anim_save("./04_animate_gifs/second_saved_animation_oscar_cubes.gif", height = 372, width = 538, units = "px")
 
 
+dim(img)
+dim(oscar)
+width(img)
+height(img)
+depth(img)
+spectrum(img)
+img
+
+# Point to the place where your image is stored
+no81 <- './00_raw_data/No81_F1_square_cropped.jpg'
+
+# Load and convert to grayscale
+load.image(no81) %>%
+  grayscale() -> img_no81
+
+plot(img_no81)
+
+# The image is summarized into s x s squares 
+s <- 3
+
+# Resume pixels using mean: this decreases drastically the resolution of the image
+img_no81 %>% 
+  as.data.frame() %>%
+  mutate(x = cut(x, round(dim(img_no81)[1]/s, 0), labels = FALSE),
+         y = cut(y, round(dim(img_no81)[2]/s, 0), labels = FALSE)) %>%
+  group_by(x, y) %>%
+  summarise(value = mean(value)) -> df_no81
+
+# Create new variable to be used to define size and color of the lines of tiles
+df_no81 %>% mutate(z = cut(value, breaks = 20, labels = FALSE)) -> df_no81
+
+# Initialize plot 
+plot_no81 <- ggplot()
+
+# Resulting plot will be build with 20 layers: one layer per each different value of z 
+for (i in 1:20){
+  sub_data = df_no81 %>% filter(z==i)
+  plot_no81 <- plot_no81 + geom_tile(aes(x, y),
+                           size = 2*i/(20-1)-2/(20-1),
+                           fill = "#E27231",
+                           col = paste0("gray", round(((100-5)*i)/(20-1)+5-(100-5)/(20-1), 0)),
+                           data = df_no81 %>% filter(z==i))
+}
+
+# Last tweaks
+plot_no81 <- plot_no81 +
+  coord_fixed() +
+  scale_y_reverse() -> plot_no81
+
+#plot_no81 + transition_manual(-x, cumulative = TRUE)
+plot_no81 + transition_states(z) + shadow_mark()
+
+animate(plot_no81, fps = 30, duration = 10)
+
+df_to_bind <- df %>% 
+  mutate(image = 'oscar')
+
+df_no81_to_bind <- df_no81 %>% 
+  mutate(image = 'no81')
+
+two_animate_df <- bind_rows(df_to_bind,
+                            df_no81_to_bind)
+
+# Initialize plot 
+plot_two_animate <- ggplot()
+
+# Resulting plot will be build with 20 layers: one layer per each different value of z 
+for (i in 1:20){
+  sub_data = two_animate_df %>% filter(z==i)
+  plot_two_animate <- plot_two_animate + geom_tile(aes(x, y),
+                                     size = 2*i/(20-1)-2/(20-1),
+                                     fill = "#E27231",
+                                     col = paste0("gray", round(((100-5)*i)/(20-1)+5-(100-5)/(20-1), 0)),
+                                     data = two_animate_df %>% filter(z==i))
+}
+
+# Last tweaks
+plot_two_animate <- plot_two_animate +
+  coord_fixed() +
+  scale_y_reverse() -> plot_two_animate
+
+# plot_two_animate + transition_manual(case_when(image == 'oscar' ~ x, TRUE ~ -x), cumulative = TRUE)
+plot_two_animate + transition_time(case_when(image == 'oscar' ~ x, TRUE ~ -x)) + shadow_mark()
+
+plot_two_animate + transition_components(case_when(image == 'oscar' ~ x, TRUE ~ -x), 
+                                         enter_length = 3, 
+                                         exit_length = 3) +
+  enter_fade() +
+  exit_fade() 
+
+# df_no81_edit <- df_no81 %>% 
+#   filter(x > 3 & x < 48 & y >12 & y < 38)
+# 
+# # Initialize plot 
+# plot_no81_edit <- ggplot()
+# 
+# # Resulting plot will be build with 20 layers: one layer per each different value of z 
+# for (i in 1:20){
+#   sub_data = df_no81_edit %>% filter(z==i)
+#   plot_no81_edit <- plot_no81_edit + geom_tile(aes(x, y),
+#                                      size = 2*i/(20-1)-2/(20-1),
+#                                      fill = "#E27231",
+#                                      col = paste0("gray", round(((100-5)*i)/(20-1)+5-(100-5)/(20-1), 0)),
+#                                      data = df_no81_edit %>% filter(z==i))
+# }
+# 
+# # Last tweaks
+# plot_no81_edit <- plot_no81_edit +
+#   coord_fixed() +
+#   scale_y_reverse() -> plot_no81_edit
+# 
+# #plot_no81_edit + transition_manual(-x, cumulative = TRUE)
+# plot_no81_edit + transition_time(x) + shadow_mark()
 
 
+plot_oscar / plot_no81
 
+# Point to the place where your image is stored
+b_of_f <- './00_raw_data/bride_of_frankenstein.jpeg'
 
+# Load and convert to grayscale
+load.image(b_of_f) %>%
+  grayscale() -> img_b_of_f
+
+plot(img_b_of_f)
+
+# The image is summarized into s x s squares 
+s <- 3
+
+# Resume pixels using mean: this decreases drastically the resolution of the image
+img_b_of_f %>% 
+  as.data.frame() %>%
+  mutate(x = cut(x, round(dim(img_b_of_f)[1]/s, 0), labels = FALSE),
+         y = cut(y, round(dim(img_b_of_f)[2]/s, 0), labels = FALSE)) %>%
+  group_by(x, y) %>%
+  summarise(value = mean(value)) -> df_b_of_f
+
+# Create new variable to be used to define size and color of the lines of tiles
+df_b_of_f %>% mutate(z = cut(value, breaks = 20, labels = FALSE)) -> df_b_of_f
+
+# Initialize plot 
+plot_b_of_f <- ggplot()
+
+# Resulting plot will be build with 20 layers: one layer per each different value of z 
+for (i in 1:20){
+  sub_data = df_b_of_f %>% filter(z==i)
+  plot_b_of_f <- plot_b_of_f + geom_tile(aes(x, y),
+                                     size = 2*i/(20-1)-2/(20-1),
+                                     fill = "#E27231",
+                                     col = paste0("gray", round(((100-5)*i)/(20-1)+5-(100-5)/(20-1), 0)),
+                                     data = df_b_of_f %>% filter(z==i))
+}
+
+# Last tweaks
+plot_b_of_f +
+  coord_fixed() +
+  scale_y_reverse() +
+  theme_void() -> plot_b_of_f
+
+plot_b_of_f
