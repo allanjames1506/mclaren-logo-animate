@@ -1225,4 +1225,4 @@ plot_b_of_f +
   scale_y_reverse() +
   theme_void() -> plot_b_of_f
 
-plot_b_of_f
+
