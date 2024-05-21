@@ -30,6 +30,12 @@ showtext_opts(dpi = 300)
 theme_set(theme_void() + theme(
   panel.background = element_rect(fill = 'black')))
 
+theme_set(theme_void() + theme(
+  panel.background = element_rect(fill = '#F1CA44')))
+
+theme_set(theme_void() + theme(
+  panel.background = element_rect(fill = '#449851')))
+
 # 4 Animate----
 # *4.1 McLaren speedmark buffered polygons----
 
@@ -238,7 +244,7 @@ grid_mclaren_slice |>
 
 scatter_plot_animate2 <- mc_test_aj %>% 
   ggplot(aes(lon_vals, lat_vals)) + 
-  geom_point(color = '#E27231', size =2) +
+  geom_point(color = '#F1CA44', size =2) +
   #with_outer_glow(geom_point(color = '#E27231', size =2), colour='gold', sigma = 5, expand = 5) +
   transition_time(t) + 
   shadow_wake(0.5) +
@@ -246,7 +252,7 @@ scatter_plot_animate2 <- mc_test_aj %>%
 
 animate(scatter_plot_animate2, fps = 30)
 
-anim_save("./04_animate_gifs/first_saved_animation_logo_animate.gif", height = 372, width = 538, units = "px")
+anim_save("./04_animate_gifs/first_saved_animation_logo_animate_senna2.gif", height = 372, width = 538, units = "px")
 
 # *4.5 expand inwards from perimeter to centroid---- 
 grid_mclaren_slice |>
@@ -300,14 +306,14 @@ lon_lat <- lons_unlisted %>%
 
 scatter_plot_animate_lon_lat <- lon_lat %>% 
   ggplot(aes(lon, lat)) + 
-  geom_point(color = '#E27231', size = 2) +
+  geom_point(color = '#F1CA44', size = 2) +
   #with_outer_glow(geom_point(color = '#E27231', size =2), colour='gold', sigma = 5, expand = 5) +
   transition_time(t) + 
   shadow_wake(0.5) 
 
 animate(scatter_plot_animate_lon_lat, fps = 30)
 
-anim_save("./04_animate_gifs/fourth_saved_animation_logo_animate.gif", height = 372, width = 538, units = "px")
+anim_save("./04_animate_gifs/fourth_saved_animation_logo_animate_senna1.gif", height = 372, width = 538, units = "px")
 
 # **4.6.1 Randomly shuffle time
 
@@ -414,13 +420,13 @@ lon_lats_in_out <- lons_lats3 %>%
 scatter_plot_animate_hole <- lon_lats_in_out %>% 
   ggplot(aes(lon, lat)) + 
   #geom_point(color = '#E27231', size = 2) +
-  with_outer_glow(geom_point(color = '#E27231', size =2), colour='#47c7fc', sigma = 2, expand = 2) +
+  with_outer_glow(geom_point(color = '#F1CA44', size = 2), colour = '#449851', sigma = 2, expand = 2) +
   transition_time(t) + 
   shadow_wake(0.5) 
 
 animate(scatter_plot_animate_hole, nframes = 400, fps=30)
 
-anim_save("./04_animate_gifs/fifth_saved_animation_logo_animate2.gif", height = 372, width = 538, units = "px")
+anim_save("./04_animate_gifs/fifth_saved_animation_logo_animate2_senna1.gif", height = 372, width = 538, units = "px")
 
 # *4.9 Dynamic travel top right to bottom left----
 
@@ -693,14 +699,14 @@ lons_lats9 <- lons9_unlisted %>%
 
 scatter_plot_animate_firework <- lons_lats9 %>% 
   ggplot(aes(lon, lat)) + 
-  geom_point(color = '#E27231', size = 1) +
+  geom_point(color = '#F1CA44', size = 1) +
   #with_outer_glow(geom_point(color = '#E27231', size =2), colour='#47c7fc', sigma = 2, expand = 2) +
   transition_time(t) + 
   shadow_wake(0.3) 
 
 animate(scatter_plot_animate_firework, fps=10)
 
-anim_save("./04_animate_gifs/sixth_saved_animation_logo_animate2.gif", height = 372, width = 538, units = "px")
+anim_save("./04_animate_gifs/sixth_saved_animation_logo_animate2_senna1.gif", height = 372, width = 538, units = "px")
 
 
 # *4.14 Hearts to McLaren logo----
